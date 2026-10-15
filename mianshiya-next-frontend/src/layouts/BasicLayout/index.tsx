@@ -27,11 +27,11 @@ interface Props {
  * @constructor
  */
 export default function BasicLayout({ children }: Props) {
-  const pathname = usePathname();
+  const pathname = usePathname();// 拿到当前浏览器地址栏的路径
   // 当前登录用户
-  const loginUser = useSelector((state: RootState) => state.loginUser);
+  const loginUser = useSelector((state: RootState) => state.loginUser);// 从全局仓库获取当前登录用户的信息
   const dispatch = useDispatch<AppDispatch>();
-  const router = useRouter();
+  const router = useRouter();// 用来控制页面跳转（例如跳转登录页）
 
   /**
    * 用户注销
@@ -66,14 +66,18 @@ export default function BasicLayout({ children }: Props) {
             alt="面试鸭刷题网站 - 程序员鱼皮"
           />
         }
+        // 告诉菜单当前在哪一页，对应的菜单项会自动高亮
         location={{
           pathname,
         }}
+
+        //用户头像与下拉菜单
         avatarProps={{
           src: loginUser.userAvatar || "/assets/logo.png",
           size: "small",
           title: loginUser.userName || "鱼皮鸭",
           render: (props, dom) => {
+            // 情况 A：如果没登录，点击头像直接跳转去登录
             if (!loginUser.id) {
               return (
                 <div
@@ -86,6 +90,7 @@ export default function BasicLayout({ children }: Props) {
               );
             }
             return (
+              //已登录：点击头像会弹出一个小弹窗（Dropdown），里面有“个人中心”和“退出登录”两个选项。
               <Dropdown
                 menu={{
                   items: [
@@ -115,13 +120,15 @@ export default function BasicLayout({ children }: Props) {
             );
           },
         }}
+
+        //右侧操作区：搜索框与 GitHub 链接
         actionsRender={(props) => {
-          if (props.isMobile) return [];
+          if (props.isMobile) return [];// 手机端屏幕太小，直接隐藏
           return [
             <SearchInput key="search" />,
             <a
               key="github"
-              href="https://github.com/liyupi/mianshiya-next"
+              href="https://github.com/liyupi/mianshiya-next"// GitHub 项目地址跳转
               target="_blank"
             >
               <GithubFilled key="GithubFilled" />
@@ -141,18 +148,22 @@ export default function BasicLayout({ children }: Props) {
           return <GlobalFooter />;
         }}
         onMenuHeaderClick={(e) => console.log(e)}
+        
+        // 动态菜单渲染
         // 定义有哪些菜单
+        //1. 根据当前用户的权限，动态过滤出他能看到的菜单
         menuDataRender={() => {
           return getAccessibleMenus(loginUser, menus);
         }}
         // 定义了菜单项如何渲染
+        // 2. 将每个菜单项用 Next.js 的 <Link> 包裹，实现无刷新秒开跳转
         menuItemRender={(item, dom) => (
           <Link href={item.path || "/"} target={item.target}>
             {dom}
           </Link>
         )}
       >
-        {children}
+        {children}{/* 真正的内容展示区 */}
       </ProLayout>
     </div>
   );
